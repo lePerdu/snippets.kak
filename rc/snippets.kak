@@ -7,18 +7,19 @@ define-command snippets-enable -docstring 'Enable snippets' %{
     evaluate-commands %sh{
       eval "set -- $kak_opt_snippets"
       while test $# -ge 2; do
-        snippet=$1
-        expansion=$2
+        snippet="$1"
+        snippet_regex="'\\A\\Q$(echo "$snippet" | sed -e "s/'/''/g")\\E\\z'"
+        expansion="'$(echo "$2" | sed -e "s/'/''/g")'"
         shift 2
         printf '
           try %%{
             evaluate-commands -draft %%{
-              set-register / %%(\\A\\Q%s\\E\\z)
+              set-register / %s
               execute-keys "%dH<a-;>H<a-k><ret>c<del>"
             }
-            execute-keys -client %%val(client) -with-hooks -save-regs "" %%(%s)
+            execute-keys -client %%val(client) -with-hooks -save-regs "" %s
           }
-        ' "$snippet" ${#snippet} "$expansion"
+        ' "$snippet_regex" ${#snippet} "$expansion"
       done
     }
   }}
